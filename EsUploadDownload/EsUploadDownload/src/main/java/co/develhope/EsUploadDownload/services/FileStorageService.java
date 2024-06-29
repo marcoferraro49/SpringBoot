@@ -14,28 +14,21 @@ import java.util.UUID;
 @Service
 public class FileStorageService {
 
-    @Value("${fileFolder}")
+    @Value("${fileRepoFolder}")
     private String fileFolder;
 
     public String upload(MultipartFile file) throws IOException {
-        String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
-        String newFileName = UUID.randomUUID().toString() + "." + fileExtension;
-        File destinationFile = new File(fileFolder + newFileName);
-
-        File parentDir = destinationFile.getParentFile();
-
-        if (!parentDir.exists()) {
-            if(!parentDir.mkdir()){
-                throw new IOException("Failed to create directory");
-            }
-        }
-        file.transferTo(destinationFile);
+        String ext = FilenameUtils.getExtension(file.getOriginalFilename());
+        String newFileName = UUID.randomUUID().toString()+"."+ext;
+        File finalDest = new File(fileFolder + "\\" + newFileName);
+        if(finalDest.exists()) throw new IOException("Folder does not exist");
+        file.transferTo(finalDest);
         return newFileName;
     }
 
     public byte[] download(String file) throws IOException {
-        File fileFromRepo = new File(fileFolder + File.separator + file);
-        if (!fileFromRepo.exists()) throw new IOException("File does not exist");
+        File fileFromRepo = new File(fileFolder + "\\"+file);
+        if(!fileFromRepo.exists()) throw new IOException("File does not exist");
         return IOUtils.toByteArray(new FileInputStream(fileFromRepo));
     }
 }
